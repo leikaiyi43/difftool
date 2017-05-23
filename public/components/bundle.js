@@ -17802,10 +17802,16 @@ var DiffLine = function (_React$Component) {
             var line = this.props.line;
             var showOldOnly = this.props.showOldOnly;
             var showNewOnly = this.props.showNewOnly;
+            var added = line.some(function (term) {
+                return term.added;
+            });
+            var removed = line.some(function (term) {
+                return term.removed;
+            });
 
             console.log(this.props);
             var style = {
-                color: line.added && (showOldOnly ? invisibleAddedColor : addedColor) || line.removed && (showNewOnly ? invisibleRemovedColor : removedColor) || defaultColor
+                color: added && (showOldOnly ? invisibleAddedColor : addedColor) || removed && (showNewOnly ? invisibleRemovedColor : removedColor) || defaultColor
             };
             return _react2.default.createElement(
                 'tr',
@@ -17813,12 +17819,28 @@ var DiffLine = function (_React$Component) {
                 _react2.default.createElement(
                     'td',
                     { style: { borderWidth: '0px', width: '20px', padding: '4px' } },
-                    line.added && '+' || line.removed && '-' || ''
+                    added && '+' || removed && '-' || ''
                 ),
                 _react2.default.createElement(
                     'td',
                     { style: { borderWidth: '0px', padding: '4px' } },
-                    line.value
+                    line.map(function (term, idx) {
+                        if (term.added && term.value !== '') {
+                            return _react2.default.createElement(
+                                'mark',
+                                { style: { backgroundColor: showOldOnly ? invisibleAddedColor : addedColor, color: showOldOnly ? '#272924' : 'black' }, key: idx },
+                                term.value
+                            );
+                        }
+                        if (term.removed && term.value !== '') {
+                            return _react2.default.createElement(
+                                'mark',
+                                { style: { backgroundColor: showNewOnly ? invisibleRemovedColor : removedColor, color: showNewOnly ? '#272924' : 'black' }, key: idx },
+                                term.value
+                            );
+                        }
+                        return term.value;
+                    })
                 )
             );
         }
