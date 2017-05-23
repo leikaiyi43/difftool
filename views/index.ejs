@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= title %>
+  </title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+</head>
+
+<body style='background: #272822'>
+  <div id='root' />
+  <script>
+    console.log('<%- configFromServer %>');
+    window.configFromServer = JSON.parse( '<%- configFromServer %>');
+  </script>
+  <script type="text/javascript" src="/components/bundle.js"></script>
+</body>
+
+</html>
