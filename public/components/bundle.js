@@ -17811,7 +17811,8 @@ var DiffLine = function (_React$Component) {
 
             console.log(this.props);
             var style = {
-                color: added && (showOldOnly ? invisibleAddedColor : addedColor) || removed && (showNewOnly ? invisibleRemovedColor : removedColor) || defaultColor
+                color: added && (showOldOnly ? invisibleAddedColor : addedColor) || removed && (showNewOnly ? invisibleRemovedColor : removedColor) || defaultColor,
+                height: '28px'
             };
             return _react2.default.createElement(
                 'tr',

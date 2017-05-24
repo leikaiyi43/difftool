@@ -9,8 +9,6 @@ var defaultColor = '#e7f8f2';
 
 export default class DiffLine extends React.Component {
 
-
-
     render() {
         var line = this.props.line;
         var showOldOnly = this.props.showOldOnly;
@@ -22,6 +20,7 @@ export default class DiffLine extends React.Component {
         var style = {
             color: (added && (showOldOnly ? invisibleAddedColor : addedColor))
             || (removed && (showNewOnly ? invisibleRemovedColor : removedColor)) || defaultColor,
+            height: '28px'
         }
         return (
             <tr style={style}>

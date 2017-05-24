@@ -4,8 +4,34 @@ var jsdiff = require('diff');
 var router = express.Router();
 
 
-hasAddedAndRemovedTerm = function (line) {
-  return line.some( term => term.added ) && line.some( term => term.removed );
+escape = function (str) {
+  return str
+    .replace(/[\"]/g, '\\"')
+    .replace(/[\']/g, "\\'")
+    .replace(/\\n/g, '\\\\n');
+};
+
+function needSplitToTwoLines(line) {
+  var hasAdded = line.some( term => term.added );
+  var hasRemoved = line.some( term => term.removed );
+  return hasAdded ? line.some (term => !term.added ) : hasRemoved ? line.some(term => !term.removed) : false;
+}
+
+function reconstructWithLine(wordsDiff) {
+
+  return wordsDiff.reduce(function (out, diff) {
+    diff.value.split('\n').forEach( function (term, idx, array) {
+      if (idx !== array.length - 1 ) {
+        out.lastLine.push({ added:diff.added, removed:diff.removed, value: term });
+        out.result.push(out.lastLine);
+        out.lastLine = [];
+      } else if (term !== '') {
+        out.lastLine.push({ added:diff.added, removed:diff.removed, value: term });
+      }
+    });
+
+    return out;
+  }, {result:[], lastLine: []}).result;
 }
 
 router.get('/', function (req, res, next) {
@@ -19,43 +45,42 @@ router.get('/', function (req, res, next) {
     return;
   }
 
-  var diffs = jsdiff.diffWords(text1, text2);
-  console.log(diffs);
+  var diffs = jsdiff.diffLines(text1, text2);
+  // to make sure will involve last item
+  diffs.push({value:''});
 
-
-  var results = [];
-  var lastLine = [];
-  for (var item of diffs) {
-
-    item.value.split('\n').forEach(function (i, idx, array) {
-      if (idx !== array.length - 1 || item.value.endsWith('\n')) {
-        lastLine.push({ added: item.added, removed: item.removed, value: i });
-        results.push(lastLine);
-        lastLine = [];
-      } else {
-        lastLine.push({ added: item.added, removed: item.removed, value: i });
+  var result = diffs.reduce( function (out, diff) {
+    if (!diff.added && !diff.removed ) {
+      // check current addedValue and removedValue
+      if (out.addedValue || out.removedValue) {
+        out.result.push( ...reconstructWithLine(jsdiff.diffWords(out.removedValue, out.addedValue)) );
+        out.addedValue = '';
+        out.removedValue = '';
       }
-    });
 
-  }
-
-  if (lastLine.length !== 0) {
-    results.push(lastLine);
-    lastLine = null;
-  }
-
-  results = results.reduce( function ( arr , line ) {
-    if (!hasAddedAndRemovedTerm(line)) {
-      arr.push(line);
-    } else {
-      arr.push(line.filter(term => !term.added ), line.filter(term => !term.removed ));
+      out.result.push(...diff.value.split('\n').filter((line, idx, array) => (idx !== array.length - 1 || line !== '')).map( line => ([{ value:line }])));
+    } else if ( diff.added ) {
+      out.addedValue += diff.value;
+    } else if ( diff.removed ) {
+      out.removedValue += diff.value;
     }
-    return arr;
+
+    return out;
+
+  }, { result:[], addedValue:'', removedValue:'' }).result.reduce(function (out, line) {
+    if (needSplitToTwoLines(line)) {
+      // add two empty term, make sure it will be rendered with added or removed color
+      line.push({added:true, value:''}, {removed: true, value:''});
+      out.push(line.filter(term => !term.added), line.filter(term => !term.removed));
+    } else {
+      out.push(line);
+    }
+    return out;
   }, []);
 
-  console.log(results);
+  console.log(result);
 
-  res.render('index', { title: 'Diff Tool', configFromServer: JSON.stringify(results) });
+  res.render('index', { title: 'Diff Tool', configFromServer: escape(JSON.stringify(result))});
 
 });
 
