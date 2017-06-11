@@ -13,25 +13,31 @@ export default class DiffLine extends React.Component {
         var line = this.props.line;
         var showOldOnly = this.props.showOldOnly;
         var showNewOnly = this.props.showNewOnly;
-        var added = line.some(term => term.added);
-        var removed = line.some(term => term.removed);
+        var added = line.every(term => term.added);
+        var removed = line.every(term => term.removed);
 
         console.log(this.props);
         var style = {
-            color: (added && (showOldOnly ? invisibleAddedColor : addedColor))
-            || (removed && (showNewOnly ? invisibleRemovedColor : removedColor)) || defaultColor,
+            color: defaultColor,
             height: '28px'
         }
+
+        var removedStyle = {
+            color: showNewOnly ? invisibleRemovedColor : removedColor,
+        }
+
         return (
             <tr style={style}>
-                <td style={{ borderWidth: '0px', width: '20px', padding: '4px' }}>{(added && '+') || (removed && '-' || '')}</td>
                 <td style={{ borderWidth: '0px', padding: '4px' }}>
-                    {line.map(function (term, idx) {
-                        if ( term.added && term.value !== '') {
-                            return (<mark style={{backgroundColor: showOldOnly ? invisibleAddedColor : addedColor, color:showOldOnly ? '#272924' : 'black' }} key={idx}>{term.value}</mark>);
+                    {line.filter(term => (!term.added && !term.removed) || (term.added && !showOldOnly) || (term.removed && !showNewOnly)).map(function (term, idx) {
+                        if (term.added && term.value !== '') {
+                            return (<span style={{ color: showOldOnly ? invisibleAddedColor : addedColor }} key={idx}>{term.value}</span>);
                         }
-                        if ( term.removed && term.value !== '') {
-                            return (<mark style={{backgroundColor: showNewOnly ? invisibleRemovedColor : removedColor, color: showNewOnly ? '#272924' : 'black' }} key={idx}>{term.value}</mark>);
+                        if (term.removed && term.value !== '') {
+                            if (!showOldOnly) {
+                                return (<span style={removedStyle} key={idx}><s>{term.value}</s></span>);
+                            }
+                            return (<span style={removedStyle} key={idx}>{term.value}</span>);
                         }
                         return term.value;
                     })}

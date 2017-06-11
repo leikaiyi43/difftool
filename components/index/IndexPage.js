@@ -19,20 +19,20 @@ class DiffPage extends React.Component {
 
     render() {
         return (
-        <div>
             <div>
-                <ShowLevel showOldOnly={this.state.showOldOnly} showNewOnly={this.state.showNewOnly} updateLevel={this.updateLevel} />
+                <div>
+                    <ShowLevel showOldOnly={this.state.showOldOnly} showNewOnly={this.state.showNewOnly} updateLevel={this.updateLevel} />
+                </div>
+                <Table responsive style={{ margin: '10px 15px' }}>
+                    <tbody >
+                        {this.props.diffs && this.props.diffs.map(
+                            (line, index) => (<DiffLine key={index} line={line}
+                                showNewOnly={this.state.showNewOnly} showOldOnly={this.state.showOldOnly} />))}
+                    </tbody>
+                </Table>
             </div>
-            <Table responsive>
-                <tbody>
-                    {this.props.diffs && this.props.diffs.map(
-                        (line, index) => (<DiffLine key={index} line={line} 
-                                                showNewOnly={this.state.showNewOnly} showOldOnly={this.state.showOldOnly}/>))}
-                </tbody>
-            </Table>
-        </div>
         );
     }
 }
 
-ReactDOM.render(<DiffPage diffs={window.configFromServer}/>, document.getElementById('root'));
+ReactDOM.render(<DiffPage diffs={window.configFromServer} />, document.getElementById('root'));

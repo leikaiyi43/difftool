@@ -12,9 +12,7 @@ escape = function (str) {
 };
 
 function needSplitToTwoLines(line) {
-  var hasAdded = line.some( term => term.added );
-  var hasRemoved = line.some( term => term.removed );
-  return hasAdded ? line.some (term => !term.added ) : hasRemoved ? line.some(term => !term.removed) : false;
+  return false;
 }
 
 function reconstructWithLine(wordsDiff) {
